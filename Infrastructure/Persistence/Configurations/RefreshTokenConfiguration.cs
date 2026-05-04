@@ -23,7 +23,7 @@ namespace Infrastructure.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(x => x.RevokedAt)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(x => x.ReplacedByTokenId)
                 .IsRequired(false);
@@ -35,7 +35,6 @@ namespace Infrastructure.Persistence.Configurations
                 .IsRequired(false);
 
             // Indexes
-
             builder.HasIndex(x => x.Id);
 
             builder.HasIndex(x => x.TokenHash)

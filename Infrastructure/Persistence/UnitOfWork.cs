@@ -1,4 +1,5 @@
 using Application.Common.Interfaces;
+using Infrastructure.Persistence.Data;
 
 namespace Infrastructure.Persistence
 {

@@ -9,9 +9,6 @@ namespace Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            // Register All Application Services Here
-            //services.AddScoped<IAuthService, AuthService>();
-
             // MediatR
             services.AddMediatR(cfg =>
             {

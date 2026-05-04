@@ -6,54 +6,93 @@ namespace API.Filters
 {
     public class ResultFilter : IAsyncResultFilter
     {
-        public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
+        public async Task OnResultExecutionAsync(
+            ResultExecutingContext context, 
+            ResultExecutionDelegate next)
         {
             if (context.Result is ObjectResult objectResult)
             {
-                if (objectResult.Value is Result result)
-                {
-                    context.Result = HandleResult(result);
-                }
-                else if (objectResult.Value?.GetType().IsGenericType == true &&
-                         objectResult.Value.GetType().GetGenericTypeDefinition() == typeof(Result))
-                {
-                    context.Result = HandleGenericResult(objectResult.Value);
-                }
+                var value = objectResult.Value;
 
+                if (value is Result nonGeneric)
+                {
+                    context.Result = WrapNonGeneric(nonGeneric);
+                }
+                else if (IsGenericResult(value))
+                {
+                    context.Result = WrapGeneric(value);
+                }
             }
                 await next();
         }
 
-        private IActionResult HandleResult(Result result)
+        private bool IsGenericResult(object? value)
+        {
+            if (value == null)
+                return false;
+
+            var type = value.GetType();
+            return type.IsGenericType &&
+                   type.GetGenericTypeDefinition() == typeof(Result<>);
+        }
+
+        private IActionResult WrapNonGeneric(Result result)
         {
             if (result.IsSuccess)
-                return new OkResult();
+            {
+                return new OkObjectResult(new
+                {
+                    success = true,
+                    data = (object?)null,
+                    error = (object?)null
+                });
+            }
 
             return MapError(result.Error);
         }
 
-        private IActionResult HandleGenericResult(object resultObj)
+        private IActionResult WrapGeneric(object resultObj)
         {
             dynamic result = resultObj;
 
             if (result.IsSuccess)
-                return new OkObjectResult(result.Value);
+            {
+                return new OkObjectResult(new
+                {
+                    success = true,
+                    data = result.Value,
+                    error = (object?)null
+                });
+            }
 
             return MapError(result.Error);
         }
 
         private IActionResult MapError(Error error)
         {
-            if (error.Code.StartsWith("not_found"))
-                return new NotFoundObjectResult(error);
+            var statusCode = error.Code switch
+            {
+                var c when c.Contains("not_found", StringComparison.OrdinalIgnoreCase) => 404,
+                var c when c.Contains("unauthorized", StringComparison.OrdinalIgnoreCase) => 401,
+                var c when c.Contains("forbidden", StringComparison.OrdinalIgnoreCase) => 403,
+                var c when c.Contains("conflict", StringComparison.OrdinalIgnoreCase) => 409,
+                var c when c.Contains("invalid", StringComparison.OrdinalIgnoreCase) => 400,
+                _ => 400
+            };
 
-            if (error.Code.StartsWith("validation"))
-                return new BadRequestObjectResult(error);
-
-            if (error.Code.StartsWith("conflict"))
-                return new ConflictObjectResult(error);
-
-            return new BadRequestObjectResult(error);
+            return new ObjectResult(new
+            {
+                success = false,
+                data = (object?)null,
+                error = new
+                {
+                    code = error.Code,
+                    message = error.Message
+                }
+            })
+            {
+                StatusCode = statusCode
+            };
         }
     }
 }

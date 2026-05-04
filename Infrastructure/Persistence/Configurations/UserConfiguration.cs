@@ -43,7 +43,7 @@ namespace Infrastructure.Persistence.Configurations
                 .IsUnique();
 
             // Relations
-            builder.HasMany(x => x.Roles)
+            builder.HasMany(x => x.UserRoles)
                 .WithOne(x => x.User)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Restrict);

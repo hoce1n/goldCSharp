@@ -30,12 +30,14 @@ namespace Infrastructure.Identity
             }
         }
 
-
         public string? Role =>
             User?.FindFirstValue(ClaimTypes.Role);
 
         public bool IsAuthenticated =>
             User?.Identity?.IsAuthenticated ?? false;
 
+        public string? PhoneNumber => 
+            User?.FindFirstValue("phone_number") ??
+            User?.FindFirstValue(ClaimTypes.MobilePhone);
     }
 }

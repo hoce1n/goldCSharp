@@ -1,7 +1,9 @@
 using Domain.Entities.Identity;
+using Domain.Entities.Catalog;
+using Infrastructure.Persistence.Seeds;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Persistence
+namespace Infrastructure.Persistence.Data
 {
     public class AppDbContext : DbContext
     {
@@ -18,12 +20,14 @@ namespace Infrastructure.Persistence
         public DbSet<UserRole> UserRoles => Set<UserRole>();
         public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+        public DbSet<Coin> Coins => Set<Coin>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+            RoleSeed.SeedRoles(modelBuilder);
         }
     }
 }

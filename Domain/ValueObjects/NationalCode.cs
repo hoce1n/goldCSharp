@@ -10,6 +10,8 @@ namespace Domain.ValueObjects
         {
             if(!IsValid(value))
                 throw new InvalidNationalCodeException();
+
+            Value = value;
         }
 
         public static bool IsValid(string code)

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Infrastructure.Services
@@ -31,14 +30,14 @@ namespace Infrastructure.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim("phone", user.PhoneNumber.Value),
+                new Claim("phone_number", user.PhoneNumber.Value),
                 new Claim("status", user.Status.ToString()),
                 new Claim("verfication", ((int)user.VerificationLevel).ToString())
             };
 
-            if (user.Roles != null)
+            if (user.HasRole != null)
             {
-                foreach (var userRole in user.Roles)
+                foreach (var userRole in user.UserRoles)
                 {
                     claims.Add(new Claim(ClaimTypes.Role, userRole.Role.Name));
                 }
@@ -55,12 +54,5 @@ namespace Infrastructure.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public string GenerateRefreshToken()
-        {
-            var bytes = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(bytes);
-            return Convert.ToBase64String(bytes);
-        }
     }
 }

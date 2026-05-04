@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Repositories;
+using Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Identity;
 using Domain.ValueObjects;
@@ -22,7 +23,7 @@ namespace Infrastructure.Persistence.Repositories
         public async Task<OtpCode?> GetLatestAsync(PhoneNumber phoneNumber)
         {
             return await _context.OtpCodes
-                .Where(o => o.PhoneNumber.Value == phoneNumber.Value)
+                .Where(o => o.PhoneNumber == phoneNumber)
                 .OrderByDescending(o => o.CreatedAt)
                 .FirstOrDefaultAsync();
         }
@@ -35,7 +36,7 @@ namespace Infrastructure.Persistence.Repositories
 
             return await _context.OtpCodes
                 .Where(x =>
-                    x.PhoneNumber.Value == phoneNumber.Value &&
+                    x.PhoneNumber == phoneNumber &&
                     x.ExpiresAt > now &&
                     x.UsedAt == null)
                 .OrderByDescending(x => x.CreatedAt)
@@ -48,7 +49,7 @@ namespace Infrastructure.Persistence.Repositories
         {
             return await _context.OtpCodes
                 .Where(x =>
-                    x.PhoneNumber.Value == phoneNumber.Value &&
+                    x.PhoneNumber == phoneNumber &&
                     x.CreatedAt >= since)
                 .CountAsync();
         }

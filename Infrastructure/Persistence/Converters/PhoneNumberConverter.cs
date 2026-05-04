@@ -10,7 +10,6 @@ namespace Infrastructure.Persistence.Converters
                 v => v.Value,
                 v => new PhoneNumber(v))
         {
-
         }
     }
 }

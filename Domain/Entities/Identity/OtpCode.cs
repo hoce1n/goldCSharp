@@ -10,7 +10,6 @@ namespace Domain.Entities.Identity
         public string Code { get; private set; }
         public DateTime ExpiresAt { get; private set; }
         public DateTime? UsedAt { get; private set; }
-
         public int AttemptCount { get; private set; }
 
         private OtpCode() { }
@@ -20,10 +19,8 @@ namespace Domain.Entities.Identity
             string code, 
             DateTime expiresAt)
         {
-            Id = Guid.NewGuid();
             PhoneNumber = phoneNumber;
             Code = code;
-            CreatedAt = DateTime.UtcNow;
             ExpiresAt = expiresAt;
             AttemptCount = 0;
         }

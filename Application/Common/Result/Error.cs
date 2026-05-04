@@ -21,6 +21,26 @@
 
         public static Error Conflict(string conflictName)
             => new($"conflict.{conflictName.ToLower()}", $"{conflictName} conflict occurred.");
+
+        public static Error Unauthorized()
+            => new("unauthorized", "User is not authenticated");
+
+        public static Error Forbidden()
+            => new("forbidden", "Access denied.");
+
+        public static Error Unexpected(string message)
+            => new("unexpected", message);
+
+        public static Error AlreadyExists(string entityName)
+            => new($"already_exists.{entityName.ToLower()}",
+                   $"{entityName} already exists.");
+
+        public static Error Failure(string code, string message)
+        {
+            return new Error(code, message);
+        }
+
+
         public override string ToString() => $"{Code}: {Message}";
 
     }

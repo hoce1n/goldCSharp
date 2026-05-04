@@ -21,18 +21,16 @@ namespace Domain.Entities.Identity
             string tokenHash, 
             DateTime expiresAt)
         {
-            Id = Guid.NewGuid();
             UserId = userId;
             TokenHash = tokenHash;
             ExpiresAt = expiresAt;
-            CreatedAt = DateTime.UtcNow;
         }
 
         public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
         public bool IsRevoked => RevokedAt != null;
         public bool IsActive => !IsExpired && !IsRevoked;
 
-        public void Revoke()
+        public void Revoke(string? reason = null)
         {
             RevokedAt = DateTime.UtcNow;
         }

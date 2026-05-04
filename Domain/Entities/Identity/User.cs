@@ -15,13 +15,14 @@ namespace Domain.Entities.Identity
         public NationalCode? NationalCode { get; private set; }
         public DateTime? BirthDate { get; private set; }
         public Email? Email { get; private set; }
+        public bool IsPhoneVerified { get; private set; }
 
         public UserStatus Status { get; private set; }
         public VerificationLevel VerificationLevel { get; private set; }
 
 
         private readonly List<UserRole> _roles = new();
-        public IReadOnlyCollection<UserRole> Roles => _roles.AsReadOnly();
+        public IReadOnlyCollection<UserRole> UserRoles => _roles;
 
 
         private readonly List<RefreshToken> _refreshTokens = new();
@@ -65,6 +66,7 @@ namespace Domain.Entities.Identity
         {
             Email = email;
         }
+
         public void SetNationalCode(NationalCode code)
         {
             if (NationalCode != null)
@@ -75,6 +77,13 @@ namespace Domain.Entities.Identity
 
             
             AddDomainEvent(new NationalCodeVerifiedEvent(Id, NationalCode));
+        }
+
+
+        public void VerifyPhone()
+        {
+            IsPhoneVerified = true;
+            SetUpdated();
         }
 
         public bool HasRole(Guid roleId)
@@ -146,7 +155,7 @@ namespace Domain.Entities.Identity
 
             var oldToken = _refreshTokens.FirstOrDefault(t => t.Id == oldTokenId);
 
-            if (oldToken == null)
+            if (oldToken is null)
                 throw new RefreshTokenNotFoundException();
 
             if (!oldToken.IsActive)

@@ -25,6 +25,7 @@
             public const string InvalidPhoneNumber = "User.InvalidPhoneNumber";
             public const string PhoneNumberRequired = "User.PhoneNubmerRequired";
             public const string NationalCodeAlreadySet = "User.NationalCodeAlreadySet";
+            public const string Unauthorized = "User.Unauthorized";
             public const string Blocked = "User.Blocked";
             public const string NotFound = "User.NotFound";
             public const string NotVerified = "User.NotVerified";
@@ -36,6 +37,7 @@
             public const string Invalid = "OTP.Invalid";
             public const string Expired = "OTP.Expired";
             public const string NotFound = "OTP.NotFound";
+            public const string LockedOut = "OTP.LockedOut";
             public const string OTPAlreadyUsed = "OTP.AlreadyUsed";
             public const string TooManyRequests = "OTP.TooManyRequests";
         }
@@ -46,7 +48,20 @@
             public const string Expired = "RefreshToken.Expired";
             public const string Revoked = "RefreshToken.Revoked";
             public const string NotFound = "RefreshToken.NotFound";
+            public const string Unauthorized = "RefreshToken.Unauthorized";
 
+        }
+
+        public static class Coin
+        {
+            public const string InvalidCoinName = "Coin.InvalidCoinName";
+            public const string InvalidWeight = "Coin.InvalidWeight";
+            public const string InvalidKarat = "Coin.InvalidKarat";
+            public const string InvalidMintingFee = "Coin.InvalidMintingFee";
+            public const string InvalidStock = "Coin.InvalidStock";
+            public const string InsufficientStock = "Coin.InsufficientStock";
+            public const string NotFound = "Coin.NotFound";
+            public const string DuplicateName = "Coin.DuplicateName";
         }
 
     }

@@ -2,6 +2,6 @@
 {
     public interface ITokenGenerator
     {
-        string GenerateRandomToken(int size = 64);
+        string GenerateRandomToken();
     }
 }

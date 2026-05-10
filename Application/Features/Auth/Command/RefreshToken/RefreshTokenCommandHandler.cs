@@ -43,7 +43,7 @@ namespace Application.Features.Auth.Command.RefreshToken
         public async Task<Result<RefreshTokenResponse>> Handle(
             RefreshTokenCommand command,
             CancellationToken cancellationToken)
-        {
+         {
             var http = _httpContextAccessor.HttpContext;
 
             if (http is null)
@@ -82,8 +82,6 @@ namespace Application.Features.Auth.Command.RefreshToken
 
             var (rawNew, newTokenEntity) =
                 _refreshTokenDomainService.Rotate(user, refreshToken);
-
-            user.ReplaceRefreshToken(refreshToken.Id, newTokenEntity);
 
             await _refreshTokenRepository.AddAsync(newTokenEntity);
             await _refreshTokenRepository.UpdateAsync(refreshToken);

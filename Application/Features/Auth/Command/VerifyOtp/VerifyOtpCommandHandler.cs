@@ -19,7 +19,7 @@ namespace Application.Features.Auth.Command.VerifyOtp
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly ITokenService _tokenService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IRoleRepository _roleRepository;
+        //private readonly IRoleRepository _roleRepository;
 
         private const int MaxAttempts = 5;
 
@@ -29,8 +29,9 @@ namespace Application.Features.Auth.Command.VerifyOtp
             RefreshTokenDomainService refreshTokenDomainService,
             IRefreshTokenRepository refreshTokenRepository,
             ITokenService tokenService,
-            IUnitOfWork unitOfWork,
-            IRoleRepository roleRepository)
+            IUnitOfWork unitOfWork
+            //IRoleRepository roleRepository
+        )
         {
             _userRepository = userRepository;
             _otpCodeRepository = otpCodeRepository;
@@ -38,7 +39,7 @@ namespace Application.Features.Auth.Command.VerifyOtp
             _refreshTokenRepository = refreshTokenRepository;
             _tokenService = tokenService;
             _unitOfWork = unitOfWork;
-            _roleRepository = roleRepository;
+            //_roleRepository = roleRepository;
         }
 
         public async Task<Result<VerifyOtpResponse>> Handle(
@@ -65,7 +66,7 @@ namespace Application.Features.Auth.Command.VerifyOtp
             if (otp.IsLockedOut(MaxAttempts))
             {
                 return Result<VerifyOtpResponse>.Failure(
-                    Error.Failure(ErrorCodes.OTP.TooManyRequests, "Too many failed attempts."));
+                    Error.Failure(ErrorCodes.OTP.TooManyRequests, "تلاش های ناموفق بسیاری داشتید."));
             }
 
             if (!otp.Code.Equals(request.Code))
@@ -87,13 +88,7 @@ namespace Application.Features.Auth.Command.VerifyOtp
 
                 user.VerifyPhone();
 
-                var customerRole = await _roleRepository.GetByNameAsync("Customer", cancellationToken);
-                if (customerRole is null)
-                    throw new InvalidOperationException("نقش Customer در سیستم یافت نشد. لطفاً Seed را اجرا کنید.");
-
-                user.AddRole(customerRole);
                 await _userRepository.AddAsync(user);
-
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
 
                 user = await _userRepository.GetByIdAsync(user.Id, cancellationToken);

@@ -10,6 +10,7 @@ namespace Application.Abstractions.Repositories
 
         Task<Coin?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
         Task<Coin?> GetByNameAsync(string name, CancellationToken cancellationToken = default);
+        Task<bool> ExistsByNameExceptIdAsync(string name, Guid id, CancellationToken cancellationToken = default);
         Task<List<Coin>> GetAllAsync(CancellationToken cancellationToken = default);
         Task<List<Coin>> GetActiveCoinsAsync(CancellationToken cancellationToken = default);
         Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default);

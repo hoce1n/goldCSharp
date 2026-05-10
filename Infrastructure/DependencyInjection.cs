@@ -3,7 +3,9 @@ using Application.Abstractions.Caching;
 using Application.Abstractions.Repositories;
 using Application.Abstractions.Services;
 using Application.Common.Interfaces;
+using Application.Services.Catalog;
 using Domain.Abstractions.Security;
+using Domain.Services.Catalog;
 using Domain.Services.Identity;
 using Infrastructure.Caching;
 using Infrastructure.Identity;
@@ -30,8 +32,8 @@ namespace Infrastructure
             // DbContext:
             //if (env.IsDevelopment())
             //{
-            // services.AddDbContext<AppDbContext>(options =>
-            //    options.UseInMemoryDatabase("DebugDatabase"));
+            //services.AddDbContext<AppDbContext>(options =>
+            //   options.UseInMemoryDatabase("DebugDatabase"));
 
             services.AddDbContext<AppDbContext>(option =>
                option.UseSqlServer(Environment.GetEnvironmentVariable("Gold_Connection", EnvironmentVariableTarget.Machine)));
@@ -64,15 +66,21 @@ namespace Infrastructure
             services.AddScoped<ITokenGenerator, TokenGenerator>();
             services.AddScoped<ITokenHasher, TokenHasher>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-            services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<ICoinRepository, CoinRepository>();
+            services.AddScoped<IMarketPriceRepository, MarketPriceRepository>();
             services.AddScoped<RefreshTokenDomainService>();
 
             // External Services:
             services.AddScoped<ISMSService, SMSService>();
             services.AddScoped<ITokenService, TokenService>();
-
+            services.AddScoped<PricingEngine>();
             services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+            services.AddHostedService<MarketPriceWorker>();
+
+            services.AddScoped<MarketPriceService>();
+
+            services.AddScoped<CoinPriceService>();
+
 
             return services;
         }

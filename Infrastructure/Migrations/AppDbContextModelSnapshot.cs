@@ -80,6 +80,29 @@ namespace Infrastructure.Migrations
                     b.ToTable("Coins", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Catalog.MarketPriceSnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("Price18PerGram")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .IsDescending();
+
+                    b.ToTable("MarketPriceSnapshots", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Identity.OtpCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -161,51 +184,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("RefreshToken", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Identity.Role", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Roles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedAt = new DateTime(2026, 5, 3, 17, 54, 28, 275, DateTimeKind.Utc).AddTicks(8091),
-                            Name = "Customer"
-                        },
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedAt = new DateTime(2026, 5, 3, 17, 54, 28, 275, DateTimeKind.Utc).AddTicks(8091),
-                            Name = "Admin"
-                        },
-                        new
-                        {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            CreatedAt = new DateTime(2026, 5, 3, 17, 54, 28, 275, DateTimeKind.Utc).AddTicks(8091),
-                            Name = "Manager"
-                        });
-                });
-
             modelBuilder.Entity("Domain.Entities.Identity.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -242,6 +220,9 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(11)
                         .HasColumnType("nvarchar(11)");
 
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -259,21 +240,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Identity.UserRole", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("UserRole", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.Identity.RefreshToken", b =>
                 {
                     b.HasOne("Domain.Entities.Identity.User", "User")
@@ -285,35 +251,9 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Identity.UserRole", b =>
-                {
-                    b.HasOne("Domain.Entities.Identity.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Identity.User", "User")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Identity.Role", b =>
-                {
-                    b.Navigation("UserRoles");
-                });
-
             modelBuilder.Entity("Domain.Entities.Identity.User", b =>
                 {
                     b.Navigation("RefreshTokens");
-
-                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

@@ -41,6 +41,7 @@ namespace Application.Features.Auth.Query.GetCurrentUser
                 PhoneNumber = user.PhoneNumber.Value,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                Role = user.Role,
                 NationalCode = user.NationalCode.Value,
                 Birthdate = user.BirthDate.ToString(),
                 Email = user.Email.Value,

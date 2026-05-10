@@ -3,9 +3,11 @@ using API.Extensions;
 using API.Filters;
 using API.Middleware;
 using Application;
+using Application.Abstractions.Services;
 using Application.Common.Mapping;
 using HealthChecks.UI.Client;
 using Infrastructure;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
@@ -35,6 +37,13 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddApplicationHealthChecks(builder.Configuration);
 builder.Services.AddCustomApiBehavior();
+
+
+builder.Services.AddHttpClient<IGoldPriceApiClient, GoldPriceApiClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.brsapi.ir/Market/Gold_Currency.php?key=BWwtWvrnULuAgmZ6hr6Bh7RwPXbbmhTU");
+});
+
 
 // JWT Key from config
 var jwtSecret = builder.Configuration["Jwt:Secret"];

@@ -13,7 +13,10 @@ namespace Application.Features.Catalog.Coins.Queries.GetCoinById
         bool IsActive,
         string? ImageUrl,
         string? Description,
-        DateTime CreatedAt
+        DateTime CreatedAt,
+
+        long FinalPrice,
+        DateTime PriceSnapshotTimeStamp
     );
 
 }

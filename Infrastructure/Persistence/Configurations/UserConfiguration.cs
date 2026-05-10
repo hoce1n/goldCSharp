@@ -38,15 +38,19 @@ namespace Infrastructure.Persistence.Configurations
                 .HasConversion<int>()
                 .IsRequired();
 
+            builder.Property(x => x.Role)
+                .HasConversion<int>()
+                .IsRequired();
+
             // Indexes
             builder.HasIndex(x => x.PhoneNumber)
                 .IsUnique();
 
             // Relations
-            builder.HasMany(x => x.UserRoles)
-                .WithOne(x => x.User)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //builder.HasMany(x => x.UserRoles)
+            //    .WithOne(x => x.User)
+            //    .HasForeignKey(x => x.UserId)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(x => x.RefreshTokens)
                 .WithOne(x => x.User)

@@ -60,6 +60,47 @@ namespace Domain.Entities.Catalog
 
             return coin;
         }
+        public void UpdateDetails(
+            string? name = null,
+            int? weightInSoot = null,
+            KaratType? karat = null,
+            string? imageUrl = null,
+            string? description = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new InvalidCoinNameException();
+
+            Name = name.Trim();
+
+            if (weightInSoot.HasValue)
+            {
+                if (weightInSoot.Value <= 0)
+                    throw new InvalidWeightException();
+                WeightInSoot = weightInSoot.Value;
+            }
+
+            if (karat.HasValue)
+            {
+                Karat = karat.Value;
+            }
+
+            if (imageUrl != null)
+                ImageUrl = imageUrl;
+
+            if (description != null)
+                Description = description;
+
+            AddDomainEvent(new CoinUpdatedEvent(Id));
+            SetUpdated();
+        }
+
+        public void UpdateStock(int stock)
+        {
+            if (stock < 0)
+                throw new InvalidStockException();
+
+            Stock = stock;
+        }
 
         public void IncreaseStock(int quantity)
         {
@@ -99,39 +140,6 @@ namespace Domain.Entities.Catalog
 
             AddDomainEvent(new MintingFeeUpdatedEvent(Id, oldFee, newFee));
         }
-
-        public void UpdateDetails(
-            string? name = null,
-            int? weightInSoot = null,
-            KaratType? karat = null,
-            string? imageUrl = null,
-            string? description = null)
-        {
-            if (!string.IsNullOrWhiteSpace(name))
-                Name = name;
-
-            if (weightInSoot.HasValue)
-            {
-                if (weightInSoot.Value <= 0)
-                    throw new InvalidWeightException();
-                WeightInSoot = weightInSoot.Value;
-            }
-
-            if (karat.HasValue)
-            {
-                Karat = karat.Value;
-            }
-
-            if (imageUrl != null)
-                ImageUrl = imageUrl;
-
-            if (description != null)
-                Description = description;
-
-            AddDomainEvent(new CoinUpdatedEvent(Id));
-            SetUpdated();
-        }
-
 
         public void Activate()
         {

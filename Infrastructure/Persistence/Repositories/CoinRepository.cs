@@ -44,6 +44,12 @@ namespace Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(c => c.Name == name, cancellationToken);
         }
 
+        public async Task<bool> ExistsByNameExceptIdAsync(string name, Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Coins
+                .AnyAsync(x => x.Name == name && x.Id != id, cancellationToken);
+        }
+
         public async Task<List<Coin>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Coins

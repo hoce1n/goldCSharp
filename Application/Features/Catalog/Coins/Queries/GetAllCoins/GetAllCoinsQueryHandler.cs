@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Messaging;
 using Application.Abstractions.Repositories;
 using Application.Common.Result;
-using Mapster;
+using Application.Services.Catalog;
 
 namespace Application.Features.Catalog.Coins.Queries.GetAllCoins
 {
@@ -9,10 +9,16 @@ namespace Application.Features.Catalog.Coins.Queries.GetAllCoins
         : IQueryHandler<GetAllCoinsQuery, Result<GetAllCoinsResponse>>
     {
         private readonly ICoinRepository _coinRepository;
-
-        public GetAllCoinsQueryHandler(ICoinRepository coinRepository)
+        private readonly CoinPriceService _coinPriceService;
+        private readonly MarketPriceService _marketPriceService;
+        public GetAllCoinsQueryHandler(
+            ICoinRepository coinRepository,
+            CoinPriceService coinPriceService,
+            MarketPriceService marketPriceService)
         {
             _coinRepository = coinRepository;
+            _coinPriceService = coinPriceService;
+            _marketPriceService = marketPriceService;
         }
 
         public async Task<Result<GetAllCoinsResponse>> Handle(
@@ -26,7 +32,30 @@ namespace Application.Features.Catalog.Coins.Queries.GetAllCoins
                 cancellationToken
             );
 
-            var coinDtos = coins.Adapt<List<CoinDto>>();
+            var latestSnapshot = await _marketPriceService.GetLatestSnapshotAsync(cancellationToken);
+
+            var coinDtos = new List<CoinDto>(coins.Count);
+
+            foreach (var coin in coins)
+            {
+                var finalPrice = await _coinPriceService
+                    .CalculateCoinPriceAsync(coin, cancellationToken);
+
+                coinDtos.Add(new CoinDto(
+                    coin.Id,
+                    coin.Name,
+                    coin.WeightInSoot,
+                    coin.Karat,
+                    coin.MintingFee,
+                    coin.Stock,
+                    coin.ImageUrl,
+                    coin.Description,
+                    coin.IsActive,
+                    coin.CreatedAt,
+                    finalPrice,
+                    latestSnapshot.CreatedAt
+                ));
+            }
 
             var response = new GetAllCoinsResponse(
                 coinDtos,

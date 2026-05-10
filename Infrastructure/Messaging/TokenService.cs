@@ -30,18 +30,12 @@ namespace Infrastructure.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim("full_name", user.FullName),
                 new Claim("phone_number", user.PhoneNumber.Value),
                 new Claim("status", user.Status.ToString()),
-                new Claim("verfication", ((int)user.VerificationLevel).ToString())
+                new Claim("verification", ((int)user.VerificationLevel).ToString()),
+                new Claim(ClaimTypes.Role, user.Role.ToString()),
             };
-
-            if (user.HasRole != null)
-            {
-                foreach (var userRole in user.UserRoles)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, userRole.Role.Name));
-                }
-            }
 
             var token = new JwtSecurityToken(
                 issuer: issuer,

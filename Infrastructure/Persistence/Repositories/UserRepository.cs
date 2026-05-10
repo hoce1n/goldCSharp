@@ -16,9 +16,15 @@ namespace Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task AddAsync(User user, CancellationToken cancellationToken = default)
+        public Task AddAsync(User user, CancellationToken cancellationToken = default)
         {
-            await _context.AddAsync(user);
+            return _context.AddAsync(user, cancellationToken).AsTask();
+        }
+
+        public Task UpdateAsync(User user, CancellationToken cancellationToken)
+        {
+            _context.Users.Update(user);
+            return Task.CompletedTask;
         }
 
         //public async Task<int> DeleteAsync(User user, CancellationToken cancellationToken = default)
@@ -30,8 +36,6 @@ namespace Infrastructure.Persistence.Repositories
         public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.Users
-                .Include(u => u.UserRoles)
-                    .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
         }
 
@@ -39,11 +43,8 @@ namespace Infrastructure.Persistence.Repositories
         {
             return await _context.Users
                 .Include(u => u.RefreshTokens)
-                .Include(u => u.UserRoles)
-                    .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         }
-
 
         public async Task<User?> GetByPhoneNumberAsync(PhoneNumber phoneNumber)
         {
@@ -51,16 +52,7 @@ namespace Infrastructure.Persistence.Repositories
                 return null;
 
             return await _context.Users
-                .Include(u => u.UserRoles)
-                    .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
-        }
-
-
-        public Task UpdateAsync(User user, CancellationToken cancellationToken)
-        {
-            _context.Users.Update(user);
-            return Task.CompletedTask;
         }
     }
 }

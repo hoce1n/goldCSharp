@@ -1,5 +1,5 @@
 using Domain.Common;
-using Domain.Enums;
+using Domain.Enums.Identity;
 using Domain.Events.User;
 using Domain.Exceptions.User;
 using Domain.Excetions.Auth;
@@ -19,11 +19,9 @@ namespace Domain.Entities.Identity
 
         public UserStatus Status { get; private set; }
         public VerificationLevel VerificationLevel { get; private set; }
-
-
-        private readonly List<UserRole> _roles = new();
-        public IReadOnlyCollection<UserRole> UserRoles => _roles;
-
+        public UserRole Role { get; private set; }
+        //private readonly List<UserRole> _roles = new();
+        //public IReadOnlyCollection<UserRole> UserRoles => _roles;
 
         private readonly List<RefreshToken> _refreshTokens = new();
         public IReadOnlyCollection<RefreshToken> RefreshTokens => _refreshTokens;
@@ -35,7 +33,7 @@ namespace Domain.Entities.Identity
             PhoneNumber = phoneNumber;
             Status = UserStatus.Active;
             VerificationLevel = VerificationLevel.Unverified;
-
+            Role = UserRole.Admin;
             AddDomainEvent(new UserRegisteredEvent(Id));
         }
 
@@ -79,32 +77,38 @@ namespace Domain.Entities.Identity
             AddDomainEvent(new NationalCodeVerifiedEvent(Id, NationalCode));
         }
 
-
+        
         public void VerifyPhone()
         {
             IsPhoneVerified = true;
             SetUpdated();
         }
 
-        public bool HasRole(Guid roleId)
+        public void SetRole(UserRole role)
         {
-            return _roles.Any(r => r.RoleId == roleId);
+            Role = role;
+            SetUpdated();
         }
 
-        public void AddRole(Role role)
-        {
-            if (_roles.Any(r => r.RoleId == role.Id))
-            return;
+        //public bool HasRole(Guid roleId)
+        //{
+        //    return _roles.Any(r => r.RoleId == roleId);
+        //}
 
-            _roles.Add(new UserRole(Id, role.Id));
-        }
-        public void RemoveRole(Role role)
-        {
-            var userRole = _roles.FirstOrDefault(r => r.RoleId == role.Id);
+        //public void AddRole(Role role)
+        //{
+        //    if (_roles.Any(r => r.RoleId == role.Id))
+        //    return;
 
-            if (userRole != null)
-                _roles.Remove(userRole);
-        }
+        //    _roles.Add(new UserRole(Id, role.Id));
+        //}
+        //public void RemoveRole(Role role)
+        //{
+        //    var userRole = _roles.FirstOrDefault(r => r.RoleId == role.Id);
+
+        //    if (userRole != null)
+        //        _roles.Remove(userRole);
+        //}
 
         public void EnsureIsActive()
         {

@@ -1,7 +1,9 @@
 ﻿using Application.Abstractions.Messaging;
 using Application.Abstractions.Repositories;
+using Application.Abstractions.Services;
 using Application.Common.Result;
-using Application.Services.Catalog;
+using Domain.Enums.Catalog;
+using Domain.Enums.Quote;
 
 namespace Application.Features.Catalog.Coins.Queries.GetAllCoins
 {
@@ -9,15 +11,15 @@ namespace Application.Features.Catalog.Coins.Queries.GetAllCoins
         : IQueryHandler<GetAllCoinsQuery, Result<GetAllCoinsResponse>>
     {
         private readonly ICoinRepository _coinRepository;
-        private readonly CoinPriceService _coinPriceService;
-        private readonly MarketPriceService _marketPriceService;
+        private readonly IPricingService _pricingService;
+        private readonly IMarketPriceService _marketPriceService;
         public GetAllCoinsQueryHandler(
             ICoinRepository coinRepository,
-            CoinPriceService coinPriceService,
-            MarketPriceService marketPriceService)
+            IPricingService pricingService,
+            IMarketPriceService marketPriceService)
         {
             _coinRepository = coinRepository;
-            _coinPriceService = coinPriceService;
+            _pricingService = pricingService;
             _marketPriceService = marketPriceService;
         }
 
@@ -38,8 +40,11 @@ namespace Application.Features.Catalog.Coins.Queries.GetAllCoins
 
             foreach (var coin in coins)
             {
-                var finalPrice = await _coinPriceService
-                    .CalculateCoinPriceAsync(coin, cancellationToken);
+                var (unitPrice, _) = await _pricingService.GetPriceAsync(
+                    coin.Id,
+                    ProductType.Coin,
+                    QuoteSide.Buy,
+                    cancellationToken);
 
                 coinDtos.Add(new CoinDto(
                     coin.Id,
@@ -52,7 +57,7 @@ namespace Application.Features.Catalog.Coins.Queries.GetAllCoins
                     coin.Description,
                     coin.IsActive,
                     coin.CreatedAt,
-                    finalPrice,
+                    unitPrice,
                     latestSnapshot.CreatedAt
                 ));
             }

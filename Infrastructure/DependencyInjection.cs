@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Infrastructure
 {
@@ -29,24 +30,23 @@ namespace Infrastructure
             IConfiguration configuration,
             IWebHostEnvironment env)
         {
-            // DbContext:
-            //if (env.IsDevelopment())
-            //{
-            //services.AddDbContext<AppDbContext>(options =>
-            //   options.UseInMemoryDatabase("DebugDatabase"));
+            //DbContext:
+            if (env.IsDevelopment())
+            {
+                services.AddDbContext<AppDbContext>(options =>
+                   options.UseInMemoryDatabase("DebugDatabase"));
 
-            services.AddDbContext<AppDbContext>(option =>
-               option.UseSqlServer(Environment.GetEnvironmentVariable("Gold_Connection", EnvironmentVariableTarget.Machine)));
-            //}
-            //else
-            //{
-            //    services.AddDbContext<AppDbContext>(option =>
-            //        option.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-            //}
+            }
+            else
+            {
+                services.AddDbContext<AppDbContext>(option =>
+                   option.UseSqlServer(Environment.GetEnvironmentVariable("Gold_Connection", EnvironmentVariableTarget.Machine)));
+            }
 
             //Caching:
             services.AddMemoryCache();
             services.AddScoped<ICacheService, MemoryCacheService>();
+
             //services.AddStackExchangeRedisCache(options =>
             //{
             //    options.Configuration = configuration["Redis:ConnectionString"];
@@ -68,19 +68,19 @@ namespace Infrastructure
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<ICoinRepository, CoinRepository>();
             services.AddScoped<IMarketPriceRepository, MarketPriceRepository>();
+            services.AddScoped<IQuoteRepository, QuoteRepository>();
+            services.AddScoped<IMeltedGoldRepository, MeltedGoldRepository>();
             services.AddScoped<RefreshTokenDomainService>();
 
             // External Services:
             services.AddScoped<ISMSService, SMSService>();
             services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<PricingEngine>();
+            services.AddScoped<IMarketPriceService, MarketPriceService>();
+            services.AddScoped<IPricingService, PricingService>();
+
             services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+            services.AddScoped<PricingEngine>();
             services.AddHostedService<MarketPriceWorker>();
-
-            services.AddScoped<MarketPriceService>();
-
-            services.AddScoped<CoinPriceService>();
-
 
             return services;
         }

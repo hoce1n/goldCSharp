@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Messaging;
 using Application.Abstractions.Repositories;
 using Application.Common.Result;
-using Application.Services.Catalog;
+using Application.Abstractions.Services;
 using Domain.Common.Errors;
 
 namespace Application.Features.Catalog.MarketPrices.Queries.GetLatest
@@ -9,9 +9,9 @@ namespace Application.Features.Catalog.MarketPrices.Queries.GetLatest
     public sealed class GetLatestMarketPriceQueryHandler
         : IQueryHandler<GetLatestMarketPriceQuery, Result<GetLatestMarketPriceResponse>>
     {
-        private readonly MarketPriceService _marketPriceService;
+        private readonly IMarketPriceService _marketPriceService;
 
-        public GetLatestMarketPriceQueryHandler(MarketPriceService marketPriceService)
+        public GetLatestMarketPriceQueryHandler(IMarketPriceService marketPriceService)
         {
             _marketPriceService = marketPriceService;
         }

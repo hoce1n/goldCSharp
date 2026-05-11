@@ -1,8 +1,10 @@
 ﻿using Application.Abstractions.Messaging;
 using Application.Abstractions.Repositories;
+using Application.Abstractions.Services;
 using Application.Common.Result;
-using Application.Services.Catalog;
 using Domain.Common.Errors;
+using Domain.Enums.Catalog;
+using Domain.Enums.Quote;
 
 namespace Application.Features.Catalog.Coins.Queries.GetCoinById
 {
@@ -10,16 +12,16 @@ namespace Application.Features.Catalog.Coins.Queries.GetCoinById
         : IQueryHandler<GetCoinByIdQuery, Result<GetCoinByIdResponse>>
     {
         private readonly ICoinRepository _coinRepository;
-        private readonly CoinPriceService _coinPriceService;
-        private readonly MarketPriceService _marketPriceService;
+        private readonly IPricingService _pricingService;
+        private readonly IMarketPriceService _marketPriceService;
 
         public GetCoinByIdQueryHandler(
-            ICoinRepository coinRepository, 
-            CoinPriceService coinPriceService,
-            MarketPriceService marketPriceService)
+            ICoinRepository coinRepository,
+            IPricingService pricingService,
+            IMarketPriceService marketPriceService)
         {
             _coinRepository = coinRepository;
-            _coinPriceService = coinPriceService;
+            _pricingService = pricingService;
             _marketPriceService = marketPriceService;
         }
 
@@ -33,7 +35,12 @@ namespace Application.Features.Catalog.Coins.Queries.GetCoinById
                 return Result<GetCoinByIdResponse>.Failure(
                     Error.Failure(ErrorCodes.Coin.NotFound, "متاسفانه نتوانستیم محصولی که دنبال آن هستید را پیدا کنیم."));
 
-            var finalPrice = await _coinPriceService.CalculateCoinPriceAsync(coin, cancellationToken);
+            var (unitPrice, _) = await _pricingService.GetPriceAsync(
+                coin.Id,
+                ProductType.Coin,
+                QuoteSide.Buy,
+                cancellationToken);
+
             var latestSnapshot = await _marketPriceService.GetLatestSnapshotAsync(cancellationToken);
 
             var response = new GetCoinByIdResponse(
@@ -47,7 +54,7 @@ namespace Application.Features.Catalog.Coins.Queries.GetCoinById
                 coin.ImageUrl,
                 coin.Description,
                 coin.CreatedAt,
-                finalPrice,
+                unitPrice,
                 latestSnapshot.CreatedAt
             );
 

@@ -3,9 +3,9 @@ using Application.Abstractions.Services;
 using Application.Common.Interfaces;
 using Domain.Entities.Catalog;
 
-namespace Application.Services.Catalog
+namespace Infrastructure.Services
 {
-    public class MarketPriceService
+    public class MarketPriceService : IMarketPriceService
     {
         private readonly IMarketPriceRepository _marketPriceRepository;
         private readonly IGoldPriceApiClient _goldApi;

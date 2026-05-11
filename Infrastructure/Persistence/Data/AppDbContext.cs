@@ -1,6 +1,7 @@
 using Domain.Entities.Identity;
 using Domain.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
+using Domain.Entities.Quote;
 
 namespace Infrastructure.Persistence.Data
 {
@@ -19,7 +20,8 @@ namespace Infrastructure.Persistence.Data
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<Coin> Coins => Set<Coin>();
         public DbSet<MarketPriceSnapshot> MarketPriceSnapshots => Set<MarketPriceSnapshot>();
-
+        public DbSet<Quote> Quotes => Set<Quote>();
+        public DbSet<MeltedGold> MeltedGolds => Set<MeltedGold>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

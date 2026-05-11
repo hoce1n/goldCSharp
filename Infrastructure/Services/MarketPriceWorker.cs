@@ -1,4 +1,5 @@
-﻿using Application.Services.Catalog;
+﻿using Application.Abstractions.Services;
+using Application.Services.Catalog;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -20,7 +21,7 @@ namespace Infrastructure.Services
                 using var scope = _serviceProvider.CreateScope();
 
                 var service = scope.ServiceProvider
-                    .GetRequiredService<MarketPriceService>();
+                    .GetRequiredService<IMarketPriceService>();
 
                 await service.RefreshFromExternalApiAsync(stoppingToken);
                 await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);

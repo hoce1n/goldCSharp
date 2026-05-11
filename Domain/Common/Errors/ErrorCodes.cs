@@ -62,7 +62,17 @@
             public const string InsufficientStock = "Coin.InsufficientStock";
             public const string NotFound = "Coin.NotFound";
             public const string DuplicateName = "Coin.DuplicateName";
+            public const string IdNotFound = "Coin.IdNotFound";
         }
 
+        public static class Quote
+        {
+            public const string Expired = "Quote.Expired";
+            public const string InvalidAmount = "Quote.InvalidAmount";
+            public const string InvalidProduct = "Quote.InvalidProduct";
+            public const string IsNotActive = "Quote.IsNotActive";
+            public const string QuoteAlreadyConfirmed = "Quote.QuoteAlreadyConfirmed";
+            public const string NotFound = "Quote.NotFound";
+        }
     }
 }

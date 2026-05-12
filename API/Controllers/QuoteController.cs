@@ -1,6 +1,7 @@
 ﻿using API.Contracts.Quote;
 using Application.Abstractions.Authentication;
 using Application.Common.Result;
+using Application.Features.Quotes.Commands.ConfirmQuote;
 using Application.Features.Quotes.Commands.CreateQuote;
 using Domain.Common.Errors;
 using MediatR;
@@ -45,6 +46,24 @@ namespace API.Controllers
                 userId.Value,
                 request.ProductId
             );
+
+            var result = await _sender.Send(command, cancellationToken);
+            return result;
+        }
+
+        [Authorize]
+        [HttpPost("{quoteId:guid}/confirm")]
+        public async Task<Result<ConfirmQuoteResponse>> ConfirmQuote(
+            Guid quoteId,
+            CancellationToken cancellationToken)
+        {
+            if (_currentUser.UserId is null)
+                return Result<ConfirmQuoteResponse>.Failure(
+                    Error.Failure(ErrorCodes.Auth.Unauthorized, "اجازه درسترسی وجود ندارد."));
+
+            var command = new ConfirmQuoteCommand(
+                quoteId,
+                _currentUser.UserId.Value);
 
             var result = await _sender.Send(command, cancellationToken);
             return result;

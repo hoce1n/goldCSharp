@@ -1,10 +1,9 @@
-﻿
-using Application.Abstractions.Messaging;
+﻿using Application.Abstractions.Messaging;
 using Application.Abstractions.Repositories;
 using Application.Common.Interfaces;
 using Application.Common.Result;
 using Domain.Common.Errors;
-using Domain.Enums.Catalog;
+using Domain.Entities.Order;
 
 namespace Application.Features.Quotes.Commands.ConfirmQuote
 {
@@ -12,17 +11,17 @@ namespace Application.Features.Quotes.Commands.ConfirmQuote
         : ICommandHandler<ConfirmQuoteCommand, Result<ConfirmQuoteResponse>>
     {
         private readonly IQuoteRepository _quoteRepository;
+        private readonly IOrderRepository _orderRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ICoinRepository _coinRepository;
 
         public ConfirmQuoteCommandHandler(
             IQuoteRepository quoteRepository, 
-            ICoinRepository coinRepository,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IOrderRepository orderRepository)
         {
             _quoteRepository = quoteRepository;
-            _coinRepository = coinRepository;
             _unitOfWork = unitOfWork;
+            _orderRepository = orderRepository;
         }
 
         public async Task<Result<ConfirmQuoteResponse>> Handle(
@@ -51,18 +50,30 @@ namespace Application.Features.Quotes.Commands.ConfirmQuote
                     Error.Failure(ErrorCodes.Quote.Expired, "مظنه منقضی شده."));
             }
 
-            if (quote.ProductType == ProductType.Coin)
+            quote.Confirm();
+
+            var order = Order.Create(
+                quote.UserId,
+                quote.ProductId,
+                quote.ProductType,
+                quote.Side,
+                quote.RequestAmount,
+                quote.UnitPrice,
+                quote.TotalPrice,
+                quote.Id
+            );
+
+            await _orderRepository.AddAsync(order, cancellationToken);
+            await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            var response = new ConfirmQuoteResponse
             {
-                var coin = await _coinRepository.GetByIdAsync(quote.ProductId, cancellationToken);
-                if (coin is null)
-                    return Result<ConfirmQuoteResponse>.Failure(
-                        Error.Failure(ErrorCodes.Coin.NotFound, "سکه پیدا نشد."));
+                OrderId = order.Id,
+                UnitPrice = quote.UnitPrice,
+                TotalPrice = quote.TotalPrice,
+            };
 
-                if (coin.Stock < quote.Amount)
-                    return Result.Failure<ConfirmQuoteResponse>("Insufficient inventory");
-
-                coin.DecreaseStock(quote.Amount);
-            }
+            return response;
 
         }
     }

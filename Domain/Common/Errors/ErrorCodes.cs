@@ -74,5 +74,12 @@
             public const string QuoteAlreadyConfirmed = "Quote.QuoteAlreadyConfirmed";
             public const string NotFound = "Quote.NotFound";
         }
+
+        public static class Order
+        {
+            public const string CanNotBeCompleted = "Order.CanNotBeCompleted";
+            public const string OnlyActiveOrdersCanBeCanceled = "Order.OnlyActiveOrdersCanBeCanceled";
+            public const string OrderCannotBeFailed = "Order.OrderCannotBeFailed";
+        }
     }
 }

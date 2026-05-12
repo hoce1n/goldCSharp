@@ -2,6 +2,7 @@ using Domain.Entities.Identity;
 using Domain.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Quote;
+using Domain.Entities.Order;
 
 namespace Infrastructure.Persistence.Data
 {
@@ -22,6 +23,7 @@ namespace Infrastructure.Persistence.Data
         public DbSet<MarketPriceSnapshot> MarketPriceSnapshots => Set<MarketPriceSnapshot>();
         public DbSet<Quote> Quotes => Set<Quote>();
         public DbSet<MeltedGold> MeltedGolds => Set<MeltedGold>();
+        public DbSet<Order> Orders => Set<Order>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

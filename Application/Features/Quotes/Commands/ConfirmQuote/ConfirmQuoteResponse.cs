@@ -2,7 +2,7 @@
 {
     public class ConfirmQuoteResponse
     {
-        public Guid TradeId { get; set; }
+        public Guid OrderId { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalPrice { get; set; }
     }

@@ -35,6 +35,8 @@ namespace Infrastructure
             {
                 services.AddDbContext<AppDbContext>(options =>
                    options.UseInMemoryDatabase("DebugDatabase"));
+                //services.AddDbContext<AppDbContext>(option =>
+                //   option.UseSqlServer(Environment.GetEnvironmentVariable("Gold_Connection", EnvironmentVariableTarget.Machine)));
 
             }
             else
@@ -70,6 +72,7 @@ namespace Infrastructure
             services.AddScoped<IMarketPriceRepository, MarketPriceRepository>();
             services.AddScoped<IQuoteRepository, QuoteRepository>();
             services.AddScoped<IMeltedGoldRepository, MeltedGoldRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<RefreshTokenDomainService>();
 
             // External Services:

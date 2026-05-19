@@ -4,7 +4,14 @@ namespace Application.Abstractions.Repositories
 {
     public interface IOrderRepository
     {
-        Task AddAsync(Order order, CancellationToken cancellationToken = default);
-        Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+        Task AddAsync(
+            Order order, 
+            CancellationToken cancellationToken = default);
+        Task<Order?> GetByIdAsync(
+            Guid id, 
+            CancellationToken cancellationToken = default);
+        Task<Order?> GetByIdempotencyKeyAsync(
+            string idempotencyKey,
+            CancellationToken cancellationToken);
     }
 }

@@ -12,22 +12,28 @@ namespace Infrastructure.Services
             _httpClient = httpClient;
         }
 
-        public async Task<long> GetLatestPriceAsync(CancellationToken cancellationToken)
+        public async Task<(bool success, long price)> GetLatestPriceAsync(CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetAsync("", cancellationToken);
+            try
+            {
+                var response = await _httpClient.GetAsync("", cancellationToken);
 
-            response.EnsureSuccessStatusCode();
+                if(!response.IsSuccessStatusCode)
+                    return (false, 0);
 
-            var result = await response.Content
-                .ReadFromJsonAsync<GoldApiResponse>(cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<GoldApiResponse>(cancellationToken);
 
-            var gold18 = result?.Gold
-                ?.FirstOrDefault(x => x.Symbol == "IR_GOLD_18K");
+                var gold = result?.Gold?.FirstOrDefault(x => x.Symbol == "IR_GOLD_18K");
 
-            if (gold18 is null)
-                throw new Exception("Gold 18K price not found in API response.");
+                if (gold is null)
+                    return (false, 0);
 
-            return gold18.Price;
+                return (true, gold.Price);
+            }
+            catch
+            {
+                return (false, 0);
+            }
         }
     }
     public sealed class GoldApiResponse

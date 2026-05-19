@@ -3,6 +3,8 @@ using Domain.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
 using Domain.Entities.Quote;
 using Domain.Entities.Order;
+using Domain.Entities.Wallet;
+using Domain.Entities.Payments;
 
 namespace Infrastructure.Persistence.Data
 {
@@ -24,6 +26,10 @@ namespace Infrastructure.Persistence.Data
         public DbSet<Quote> Quotes => Set<Quote>();
         public DbSet<MeltedGold> MeltedGolds => Set<MeltedGold>();
         public DbSet<Order> Orders => Set<Order>();
+        public DbSet<Wallet> Wallets => Set<Wallet>();
+        public DbSet<WalletLedger> WalletLedgers => Set<WalletLedger>();
+        public DbSet<Payment> Payments => Set<Payment>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

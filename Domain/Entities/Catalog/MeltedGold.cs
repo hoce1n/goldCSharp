@@ -18,12 +18,10 @@ namespace Domain.Entities.Catalog
             decimal sellFeePerGram,
             decimal minTradeAmount)
         {
-            Id = Guid.NewGuid();
             BuyFeePerGram = buyFeePerGram;
             SellFeePerGram = sellFeePerGram;
             MinTradeAmount = minTradeAmount;
             IsActive = true;
-            CreatedAt = DateTime.UtcNow;
         }
 
         public void UpdateBuyFee(decimal buyFeePerGram)

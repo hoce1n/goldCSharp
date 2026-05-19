@@ -4,7 +4,6 @@ using Application.Common.Interfaces;
 using Application.Common.Result;
 using Domain.Abstractions.Security;
 using Domain.Common.Errors;
-using Microsoft.AspNetCore.Http;
 
 namespace Application.Features.Auth.Command.Logout
 {
@@ -13,22 +12,22 @@ namespace Application.Features.Auth.Command.Logout
     {
         private readonly IUserRepository _userRepository;
         private readonly ITokenHasher _tokenHasher;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public LogoutCommandHandler(
             IUserRepository userRepository, 
             ITokenHasher tokenHasher,
-            IHttpContextAccessor httpContextAccessor,
             IRefreshTokenRepository refreshTokenRepository,
+            IDateTimeProvider dateTimeProvider,
             IUnitOfWork unitOfWork)
             
         {
             _userRepository = userRepository;
             _tokenHasher = tokenHasher;
-            _httpContextAccessor = httpContextAccessor;
             _refreshTokenRepository = refreshTokenRepository;
+            _dateTimeProvider = dateTimeProvider;
             _unitOfWork = unitOfWork;
         }
 
@@ -36,24 +35,15 @@ namespace Application.Features.Auth.Command.Logout
             LogoutCommand request,
             CancellationToken cancellationToken)
         {
-            var http = _httpContextAccessor.HttpContext;
-
-            if (http is null)
-                return Result<LogoutResponse>.Failure(
-                    Error.Failure(ErrorCodes.General.Unexpected, "Internal server error."));
-
-            var rawRefresh = http.Request.Cookies["refreshToken"];
-            if (string.IsNullOrWhiteSpace(rawRefresh))
-                return Result<LogoutResponse>.Failure(
-                    Error.Failure(ErrorCodes.RefreshToken.Unauthorized, "Refresh token missing"));
-            var hash = _tokenHasher.Hash(rawRefresh);
+            var now = _dateTimeProvider.UtcNow;
+            var hash = _tokenHasher.Hash(request.RefreshToken);
 
             var refreshToken = await _refreshTokenRepository
-                .GetByHashAsync(hash);
+                .GetByHashAsync(hash, cancellationToken);
 
             if (refreshToken is null)
                 return Result<LogoutResponse>.Failure(
-                    Error.Failure(ErrorCodes.RefreshToken.Invalid, "Invalid refresh token."));
+                    Error.Failure(ErrorCodes.RefreshToken.Invalid, "رفرش توکن معتبر نیست."));
 
 
             var user = await _userRepository
@@ -61,23 +51,22 @@ namespace Application.Features.Auth.Command.Logout
 
             if (user is null)
                 return Result<LogoutResponse>.Failure(
-                    Error.Failure(ErrorCodes.User.NotFound, "Invalid refresh token."));
+                    Error.Failure(ErrorCodes.User.NotFound, "کاربر یافت نشد."));
 
-            if (refreshToken.IsExpired)
+            if (refreshToken.IsExpired(now))
                 return Result<LogoutResponse>.Failure(
-                    Error.Failure(ErrorCodes.RefreshToken.Expired, "Expired refresh token."));
-            if (!refreshToken.IsActive)
+                    Error.Failure(ErrorCodes.RefreshToken.Expired, "رفرش توکن منقضی شده است."));
+            if (!refreshToken.IsActive(now))
                 return Result<LogoutResponse>.Failure(
-                    Error.Failure(ErrorCodes.RefreshToken.Revoked, "Revoked refresh token."));
+                    Error.Failure(ErrorCodes.RefreshToken.Revoked, "رفرش توکن قبلا غیرفعال شده است."));
 
-            refreshToken.Revoke();
+            refreshToken.Revoke(now);
 
-            await _refreshTokenRepository.UpdateAsync(refreshToken);
-            await _unitOfWork.SaveChangeAsync();
+            await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             var response = new LogoutResponse
             {
-                RevokedAtUtc = DateTime.UtcNow,
+                RevokedAtUtc = now,
                 Message = "با موفقیت خارج شدید."
             };
 

@@ -20,8 +20,6 @@ namespace Domain.Entities.Identity
         public UserStatus Status { get; private set; }
         public VerificationLevel VerificationLevel { get; private set; }
         public UserRole Role { get; private set; }
-        //private readonly List<UserRole> _roles = new();
-        //public IReadOnlyCollection<UserRole> UserRoles => _roles;
 
         private readonly List<RefreshToken> _refreshTokens = new();
         public IReadOnlyCollection<RefreshToken> RefreshTokens => _refreshTokens;
@@ -90,26 +88,6 @@ namespace Domain.Entities.Identity
             SetUpdated();
         }
 
-        //public bool HasRole(Guid roleId)
-        //{
-        //    return _roles.Any(r => r.RoleId == roleId);
-        //}
-
-        //public void AddRole(Role role)
-        //{
-        //    if (_roles.Any(r => r.RoleId == role.Id))
-        //    return;
-
-        //    _roles.Add(new UserRole(Id, role.Id));
-        //}
-        //public void RemoveRole(Role role)
-        //{
-        //    var userRole = _roles.FirstOrDefault(r => r.RoleId == role.Id);
-
-        //    if (userRole != null)
-        //        _roles.Remove(userRole);
-        //}
-
         public void EnsureIsActive()
         {
             if (Status == UserStatus.Blocked)
@@ -136,9 +114,9 @@ namespace Domain.Entities.Identity
             AddDomainEvent(new UserActivatedEvent(Id));
         }
 
-        public RefreshToken? GetActiveRefreshToken()
+        public RefreshToken? GetActiveRefreshToken(DateTime now)
         {
-            return _refreshTokens.LastOrDefault(t => t.IsActive);
+            return _refreshTokens.LastOrDefault(t => t.IsActive(now));
         }
         public void AddRefreshToken(RefreshToken token)
         {
@@ -148,12 +126,15 @@ namespace Domain.Entities.Identity
 
             _refreshTokens.Add(token);
         }
-        public void RevokeRefreshToken(Guid tokenId)
+        public void RevokeRefreshToken(Guid tokenId, DateTime now)
         {
             var token = _refreshTokens.FirstOrDefault(t => t.Id == tokenId);
-            token?.Revoke();
+            token?.Revoke(now);
         }
-        public void ReplaceRefreshToken(Guid oldTokenId, RefreshToken newToken)
+        public void ReplaceRefreshToken(
+            Guid oldTokenId, 
+            RefreshToken newToken,
+            DateTime now)
         {
             EnsureIsActive();
 
@@ -162,11 +143,11 @@ namespace Domain.Entities.Identity
             if (oldToken is null)
                 throw new RefreshTokenNotFoundException();
 
-            if (!oldToken.IsActive)
+            if (!oldToken.IsActive(now))
                 throw new RefreshTokenIsRevokedException();
 
             oldToken.SetReplacedBy(newToken.Id);
-            oldToken.Revoke();
+            oldToken.Revoke(now);
 
             _refreshTokens.Add(newToken);
         }

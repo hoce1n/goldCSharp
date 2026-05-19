@@ -4,7 +4,6 @@ using Application.Features.Auth.Command.RefreshToken;
 
 namespace Application.Features.Auth.Command.Logout
 {
-    public sealed class LogoutCommand : ICommand<Result<LogoutResponse>>
-    {
-    }
+    public sealed record LogoutCommand(string RefreshToken) 
+        : ICommand<Result<LogoutResponse>>;
 }

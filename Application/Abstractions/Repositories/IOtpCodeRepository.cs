@@ -11,7 +11,11 @@ namespace Application.Abstractions.Repositories
             
         Task<OtpCode?> GetActiveCodeAsync(
         PhoneNumber phone,
-        CancellationToken ct);
+        CancellationToken cancellationToken);
+
+        Task<IEnumerable<OtpCode>> GetActiveCodesAsync(
+            PhoneNumber phone, 
+            CancellationToken cancellationToken);
         Task<int> CountRecentAsync(PhoneNumber phoneNumber, DateTime since);
 
         Task UpdateAsync(OtpCode otp);

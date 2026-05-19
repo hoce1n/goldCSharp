@@ -8,7 +8,6 @@ namespace Domain.Entities.Identity
         public string TokenHash { get; private set; }
         public DateTime ExpiresAt { get; private set; }
         public DateTime? RevokedAt { get; private set; }
-
         public Guid? ReplacedByTokenId { get; private set; }
 
         // Navigation
@@ -26,13 +25,16 @@ namespace Domain.Entities.Identity
             ExpiresAt = expiresAt;
         }
 
-        public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
+        public bool IsExpired(DateTime now) => now >= ExpiresAt;
         public bool IsRevoked => RevokedAt != null;
-        public bool IsActive => !IsExpired && !IsRevoked;
+        public bool IsActive(DateTime now) => !IsExpired(now) && !IsRevoked;
 
-        public void Revoke(string? reason = null)
+        public void Revoke(DateTime now, string? reason = null)
         {
-            RevokedAt = DateTime.UtcNow;
+            if (RevokedAt != null)
+                return; 
+
+            RevokedAt = now;
         }
         public void SetReplacedBy(Guid newTokenId)
         {

@@ -8,7 +8,7 @@ namespace Infrastructure.Services
     {
         public async Task SendOtpAsync(PhoneNumber phoneNumber, string message, CancellationToken cancellationToken)
         {
-            Console.WriteLine($"SMS to {phoneNumber}: {message}");
+             Console.WriteLine($"SMS to {phoneNumber}: {message}");
         }
     }
 }

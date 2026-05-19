@@ -10,9 +10,7 @@ namespace Domain.Entities.Catalog
 
         public MarketPriceSnapshot(long price18PerGram)
         {
-            Id = Guid.NewGuid();
             Price18PerGram = price18PerGram;
-            CreatedAt = DateTime.UtcNow;
         }
 
     }

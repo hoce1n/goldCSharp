@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Messaging;
+﻿using Application.Abstractions.Configuration;
+using Application.Abstractions.Messaging;
 using Application.Abstractions.Repositories;
 using Application.Abstractions.Services;
 using Application.Common.Interfaces;
@@ -16,43 +17,49 @@ namespace Application.Features.Auth.Command.SendOtp
         private readonly ISMSService _smsService;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IUnitOfWork _unitOfWork;
-
-        private const int OtpExpirySeconds = 120;
+        private readonly IOtpSettings _otpSettings;
 
         public SendOtpCommandHandler(
             IOtpCodeRepository otpCodeRepository,
             ISMSService smsService, 
             IDateTimeProvider dateTime,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IOtpSettings otpSettings)
         {
             _otpCodeRepository = otpCodeRepository;
             _smsService = smsService;
             _dateTimeProvider = dateTime;
             _unitOfWork = unitOfWork;
+            _otpSettings = otpSettings;
         }
 
         public async Task<Result<SendOtpResponse>> Handle(
             SendOtpCommand request,
             CancellationToken cancellationToken)
         {
+            var now = _dateTimeProvider.UtcNow;
             var phone = new PhoneNumber(request.PhoneNumber);
 
-            var existing = await _otpCodeRepository
-                .GetActiveCodeAsync(phone, cancellationToken);
+            var rateLimitWindow = TimeSpan.FromMinutes(_otpSettings.RateLimitWindowMinutes);
 
-            if (existing is not null && !existing.IsExpired())
-            {
+            var activeOtps = await _otpCodeRepository.GetActiveCodesAsync(phone,
+                cancellationToken);
+
+            if (!OtpCode.CanRequestNewOtp(
+                activeOtps, 
+                now,
+                rateLimitWindow,
+                _otpSettings.MaxRequestsPerWindow))
+
                 return Result<SendOtpResponse>.Failure(
-                    Error.Conflict(ErrorCodes.OTP.TooManyRequests)
-                );
-            }
+                    Error.Failure(ErrorCodes.OTP.TooManyRequests, "کد قبلی که ارسال شده هنوز فعال است."));
 
             var code = GenerateOtp();
 
-            var otp = new OtpCode(
+            var otp = OtpCode.Create(
                 phone,
                 code,
-                _dateTimeProvider.UtcNow.AddMinutes(2)
+                now.AddMinutes(_otpSettings.ExpiryMinutes)
             );
 
             await _otpCodeRepository.AddAsync(otp);
@@ -66,7 +73,7 @@ namespace Application.Features.Auth.Command.SendOtp
 
             var response = new SendOtpResponse(
                 request.PhoneNumber,
-                OtpExpirySeconds
+                _otpSettings.ExpiryMinutes
             );
 
             return response;

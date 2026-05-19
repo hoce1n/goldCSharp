@@ -23,5 +23,13 @@ namespace Infrastructure.Persistence.Repositories
             return await _context.Orders
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
+
+        public async Task<Order?> GetByIdempotencyKeyAsync(
+            string idempotencyKey, 
+            CancellationToken cancellationToken)
+        {
+            return await _context.Orders
+                .FirstOrDefaultAsync(x => x.IdempotencyKey == idempotencyKey, cancellationToken);
+        }
     }
 }

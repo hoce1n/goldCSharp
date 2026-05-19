@@ -1,9 +1,8 @@
-﻿using Application.Abstractions.Messaging;
-using Application.Abstractions.Repositories;
+﻿using Application.Abstractions.Repositories;
+using Application.Abstractions.Messaging;
 using Application.Abstractions.Services;
 using Application.Common.Interfaces;
 using Application.Common.Result;
-using Application.Features.Catalog.Coins.Commands.CreateCoin;
 using Domain.Common.Errors;
 using Domain.Entities.Quote;
 using Domain.Enums.Catalog;
@@ -15,7 +14,7 @@ namespace Application.Features.Quotes.Commands.CreateQuote
     {
         private readonly IQuoteRepository _quoteRepository;
         private readonly IPricingService _pricingService;
-        private readonly IMeltedGoldRepository _medialGoldRepository;
+        private readonly IMeltedGoldRepository _meltedGoldRepository;
         private readonly ICoinRepository _coinRepository;
         private readonly IUnitOfWork _unitOfWork;
 
@@ -30,7 +29,7 @@ namespace Application.Features.Quotes.Commands.CreateQuote
         {
             _quoteRepository = quoteRepository;
             _pricingService = pricingService;
-            _medialGoldRepository = meltedGoldRepository;
+            _meltedGoldRepository = meltedGoldRepository;
             _coinRepository = coinRepository;
             _unitOfWork = unitOfWork;
         }
@@ -44,12 +43,11 @@ namespace Application.Features.Quotes.Commands.CreateQuote
                     Error.Failure(ErrorCodes.Quote.InvalidAmount, "amount invalid"));
 
             Guid ProductId;
-
             switch (command.ProductType)
             {
                 case ProductType.MeltedGold:
                     var meltedGold =
-                        await _medialGoldRepository.GetActiveOrCreateAsync(cancellationToken);
+                        await _meltedGoldRepository.GetActiveOrCreateAsync(cancellationToken);
                     ProductId = meltedGold.Id;
                     break;
 

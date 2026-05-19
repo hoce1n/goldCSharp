@@ -1,42 +1,44 @@
-﻿using Application.Abstractions.Messaging;
+﻿using Application.Abstractions.Configuration;
+using Application.Abstractions.Messaging;
 using Application.Abstractions.Repositories;
 using Application.Abstractions.Services;
 using Application.Common.Interfaces;
 using Application.Common.Result;
-using Application.Features.Users.Specifications;
 using Domain.Abstractions.Security;
 using Domain.Common.Errors;
 using Domain.Services.Identity;
-using Microsoft.AspNetCore.Http;
 
 namespace Application.Features.Auth.Command.RefreshToken
 {
     public class RefreshTokenCommandHandler
         : ICommandHandler<RefreshTokenCommand, Result<RefreshTokenResponse>>
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ITokenHasher _tokenHasher;
         private readonly ITokenService _tokenService;
         private readonly RefreshTokenDomainService _refreshTokenDomainService;
         private readonly IUserRepository _userRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuthSetting _authSetting;
 
         public RefreshTokenCommandHandler(
-            IHttpContextAccessor httpContextAccessor,
+            IDateTimeProvider dateTimeProvider,
             ITokenHasher tokenHasher,
             ITokenService tokenService,
             RefreshTokenDomainService refreshTokenDomainService,
             IRefreshTokenRepository refreshTokenRepository,
             IUserRepository userRepository,
+            IAuthSetting authSetting,
             IUnitOfWork unitOfWork)
         {
-            _httpContextAccessor = httpContextAccessor;
+            _dateTimeProvider = dateTimeProvider;
             _tokenHasher = tokenHasher;
             _tokenService = tokenService;
             _refreshTokenDomainService = refreshTokenDomainService;
             _refreshTokenRepository = refreshTokenRepository;
             _userRepository = userRepository;
+            _authSetting = authSetting;
             _unitOfWork = unitOfWork;
         }
 
@@ -44,24 +46,15 @@ namespace Application.Features.Auth.Command.RefreshToken
             RefreshTokenCommand command,
             CancellationToken cancellationToken)
          {
-            var http = _httpContextAccessor.HttpContext;
-
-            if (http is null)
-                return Result<RefreshTokenResponse>.Failure(
-                    Error.Failure(ErrorCodes.General.Unexpected, "Internal server error."));
-
-            var rawRefresh = http.Request.Cookies["refreshToken"];
-            if (string.IsNullOrWhiteSpace(rawRefresh))
-                return Result<RefreshTokenResponse>.Failure(
-                    Error.Failure(ErrorCodes.RefreshToken.Unauthorized, "Refresh token missing"));
-            var hash = _tokenHasher.Hash(rawRefresh);
+            var now = _dateTimeProvider.UtcNow;
+            var hash = _tokenHasher.Hash(command.RefreshToken);
 
             var refreshToken = await _refreshTokenRepository
-                .GetByHashAsync(hash);
+                .GetByHashAsync(hash, cancellationToken);
 
             if (refreshToken is null)
                 return Result<RefreshTokenResponse>.Failure(
-                    Error.Failure(ErrorCodes.RefreshToken.Invalid, "Invalid refresh token."));
+                    Error.Failure(ErrorCodes.RefreshToken.Invalid, "رفرش توکن، وجود ندارد."));
 
 
             var user = await _userRepository
@@ -69,40 +62,48 @@ namespace Application.Features.Auth.Command.RefreshToken
 
             if (user is null)
                 return Result<RefreshTokenResponse>.Failure(
-                    Error.Failure(ErrorCodes.User.NotFound, "Invalid refresh token."));
+                    Error.Failure(ErrorCodes.User.NotFound, "این رفرش توکن، متعلق به کاربری نیست."));
 
-            if (refreshToken.IsExpired)
+            if (refreshToken.IsExpired(now))
                 return Result<RefreshTokenResponse>.Failure(
-                    Error.Failure(ErrorCodes.RefreshToken.Expired, "Expired refresh token."));
-            if (!refreshToken.IsActive)
-                return Result<RefreshTokenResponse>.Failure(
-                    Error.Failure(ErrorCodes.RefreshToken.Revoked, "Revoked refresh token."));
+                    Error.Failure(ErrorCodes.RefreshToken.Expired, "رفرش توکن، منقضی شده است."));
 
-            _refreshTokenDomainService.EnforceReplayDefense(user, rawRefresh);
+            if (!refreshToken.IsActive(now))
+                return Result<RefreshTokenResponse>.Failure(
+                    Error.Failure(ErrorCodes.RefreshToken.Revoked, "رفرش توکن، فعال نیست."));
+
+            _refreshTokenDomainService.EnforceReplayDefense(
+                user, 
+                command.RefreshToken,
+                now);
+
+            await _userRepository.UpdateAsync(user, cancellationToken);
+
+            var expiry = TimeSpan.FromDays(_authSetting.RefreshTokenExpiryDays);
 
             var (rawNew, newTokenEntity) =
-                _refreshTokenDomainService.Rotate(user, refreshToken);
+                _refreshTokenDomainService.Rotate(
+                    user, 
+                    refreshToken, 
+                    now,
+                    expiry);
 
+            //await _refreshTokenRepository.UpdateAsync(refreshToken);
             await _refreshTokenRepository.AddAsync(newTokenEntity);
-            await _refreshTokenRepository.UpdateAsync(refreshToken);
 
-            _refreshTokenDomainService.EnforceTokenLimit(user);
-
-            await _unitOfWork.SaveChangeAsync(cancellationToken);
+            _refreshTokenDomainService.EnforceTokenLimit(
+                user, 
+                _authSetting.MaxActiveRefreshTokens,
+                now);
 
             var newAccessToken = _tokenService.GenerateAccessToken(user);
 
-            http.Response.Cookies.Append("refreshToken", rawNew, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Expires = newTokenEntity.ExpiresAt
-            });
+            await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             var response = new RefreshTokenResponse
             {
                 AccessToken = newAccessToken,
+                RefreshToken = rawNew,
                 UserId = user.Id,
                 PhoneNumber = user.PhoneNumber.Value,
                 VerificationLevel = (int)user.VerificationLevel,

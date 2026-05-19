@@ -1,5 +1,4 @@
 ﻿using Application.Abstractions.Services;
-using Application.Services.Catalog;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -18,13 +17,28 @@ namespace Infrastructure.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                using var scope = _serviceProvider.CreateScope();
+                try
+                {
+                    using var scope = _serviceProvider.CreateScope();
 
-                var service = scope.ServiceProvider
-                    .GetRequiredService<IMarketPriceService>();
+                    var service = scope.ServiceProvider
+                        .GetRequiredService<IMarketPriceService>();
 
-                await service.RefreshFromExternalApiAsync(stoppingToken);
-                await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+                    await service.RefreshFromExternalApiAsync(stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    // log
+                }
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+                }
+                catch (TaskCanceledException)
+                {
+
+                }
             }
         }
     }

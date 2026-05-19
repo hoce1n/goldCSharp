@@ -73,6 +73,7 @@
             public const string IsNotActive = "Quote.IsNotActive";
             public const string QuoteAlreadyConfirmed = "Quote.QuoteAlreadyConfirmed";
             public const string NotFound = "Quote.NotFound";
+            public const string IdempotencyRequired = "Quote.IdempotencyRequired";
         }
 
         public static class Order
@@ -80,6 +81,19 @@
             public const string CanNotBeCompleted = "Order.CanNotBeCompleted";
             public const string OnlyActiveOrdersCanBeCanceled = "Order.OnlyActiveOrdersCanBeCanceled";
             public const string OrderCannotBeFailed = "Order.OrderCannotBeFailed";
+        }
+
+        public static class Wallet
+        {
+            public const string NotFound = "Wallet.NotFound";
+            public const string InsufficientBalance = "Wallet.InsufficientBalance";
+            public const string InvalidWalletAmount = "Wallet. InvalidWalletAmountException";
+        }
+
+        public static class Payment
+        {
+            public const string InvalidPaymentAmount = "Payment.InvalidPaymentAmount";
+            public const string InvalidPaymentState = "Payment.InvalidPaymentState";
         }
     }
 }

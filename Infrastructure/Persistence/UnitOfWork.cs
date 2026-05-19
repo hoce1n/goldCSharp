@@ -1,5 +1,6 @@
-using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces;
 using Infrastructure.Persistence.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence
 {
@@ -12,9 +13,16 @@ namespace Infrastructure.Persistence
             _context = context;
         }
 
-        public Task<int> SaveChangeAsync(CancellationToken cancellationToken = default)
+        public async Task<int> SaveChangeAsync(CancellationToken cancellationToken = default)
         {
-            return _context.SaveChangesAsync(cancellationToken);
+            try
+            {
+                return await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new DbUpdateConcurrencyException("کیف پول در حال آپدیت شدن بوسیله درخواستی دیگر است.");
+            }
         }
     }
 }

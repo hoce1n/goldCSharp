@@ -18,11 +18,11 @@ namespace Infrastructure.Persistence.Repositories
             await _context.AddAsync(token);
         }
 
-        public async Task<RefreshToken?> GetByHashAsync(string hash)
+        public async Task<RefreshToken?> GetByHashAsync(string hash, CancellationToken cancellationToken)
         {
             return await _context.RefreshTokens
                 .Include(x => x.User)
-                .FirstOrDefaultAsync(x => x.TokenHash == hash);
+                .FirstOrDefaultAsync(x => x.TokenHash == hash, cancellationToken);
         }
 
 

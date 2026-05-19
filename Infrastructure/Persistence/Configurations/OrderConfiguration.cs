@@ -22,6 +22,9 @@ namespace Infrastructure.Persistence.Configurations
             builder.Property(x => x.QuoteId).IsRequired();
             builder.Property(x => x.UserId).IsRequired();
 
+            builder.HasIndex(x => x.IdempotencyKey)
+                .IsUnique();
+
             builder.Ignore(x => x.Events);
         }
     }

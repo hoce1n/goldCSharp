@@ -3,6 +3,7 @@
     public class RefreshTokenResponse
     {
         public string AccessToken { get; init; }
+        public string RefreshToken { get; init; }
         public Guid UserId { get; init; }
         public string PhoneNumber { get; init; }
         public bool IsProfileCompleted { get; init; }

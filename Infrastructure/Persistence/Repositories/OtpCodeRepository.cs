@@ -43,6 +43,16 @@ namespace Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
+        public async Task<IEnumerable<OtpCode>> GetActiveCodesAsync(
+            PhoneNumber phoneNumber,
+            CancellationToken cancellationToken)
+        {
+            return await _context.OtpCodes
+                .Where(x => x.PhoneNumber == phoneNumber)
+                .Where(x => x.ExpiresAt > DateTime.UtcNow)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<int> CountRecentAsync(
             PhoneNumber phoneNumber,
             DateTime since)

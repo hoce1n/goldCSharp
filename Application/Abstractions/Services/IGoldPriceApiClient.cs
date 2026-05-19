@@ -2,7 +2,7 @@
 {
     public interface IGoldPriceApiClient
     {
-        Task<long> GetLatestPriceAsync(CancellationToken cancellationToken);
+        Task<(bool success, long price)> GetLatestPriceAsync(CancellationToken cancellationToken);
     }
 
 }

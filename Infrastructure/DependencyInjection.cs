@@ -1,5 +1,7 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Caching;
+using Application.Abstractions.Configuration;
+using Application.Abstractions.Payments;
 using Application.Abstractions.Repositories;
 using Application.Abstractions.Services;
 using Application.Common.Interfaces;
@@ -8,7 +10,9 @@ using Domain.Abstractions.Security;
 using Domain.Services.Catalog;
 using Domain.Services.Identity;
 using Infrastructure.Caching;
+using Infrastructure.Configuration;
 using Infrastructure.Identity;
+using Infrastructure.Payments.Zarinpal;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Persistence.Repositories;
@@ -73,6 +77,11 @@ namespace Infrastructure
             services.AddScoped<IQuoteRepository, QuoteRepository>();
             services.AddScoped<IMeltedGoldRepository, MeltedGoldRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IWalletRepository, WalletRepository>();
+            services.AddScoped<IWalletLedgerRepository, WalletLedgerRepository>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
+            services.AddScoped<IPaymentGateway, ZarinpalGateway>();
+
             services.AddScoped<RefreshTokenDomainService>();
 
             // External Services:
@@ -84,6 +93,17 @@ namespace Infrastructure
             services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
             services.AddScoped<PricingEngine>();
             services.AddHostedService<MarketPriceWorker>();
+
+            services.Configure<ZarinpalOptions>(
+                configuration.GetSection("Zarinpal"));
+
+            services.AddSingleton<IAuthSetting>(sp =>
+                new AuthSetting(configuration));
+
+            services.AddSingleton<IOtpSettings>(sp =>
+                new OtpSettings(configuration));
+
+            services.AddHttpClient<ZarinpalGateway>();
 
             return services;
         }

@@ -35,7 +35,6 @@ namespace Domain.Entities.Quote
 
             return new Quote
             {
-                Id = Guid.NewGuid(),
                 ProductType = productType,
                 UserId = userId,
                 ProductId = productId,
@@ -44,7 +43,6 @@ namespace Domain.Entities.Quote
                 UnitPrice = unitPrice,
                 TotalPrice = requestAmount * unitPrice,
                 PriceSnapshotId = priceSnapshotId,
-                CreatedAt = DateTime.UtcNow,
                 ExpiredAtUtc = DateTime.UtcNow.AddSeconds(expiresInSeconds),
                 Status = QuoteStatus.Active
             };

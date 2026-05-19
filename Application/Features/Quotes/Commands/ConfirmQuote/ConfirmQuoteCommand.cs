@@ -5,6 +5,7 @@ namespace Application.Features.Quotes.Commands.ConfirmQuote
 {
     public sealed record ConfirmQuoteCommand(
         Guid QuoteId,
-        Guid UserId
+        Guid UserId,
+        string IdempotencyKey
     ) : ICommand<Result<ConfirmQuoteResponse>>;
 }

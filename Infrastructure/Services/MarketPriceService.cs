@@ -34,7 +34,10 @@ namespace Infrastructure.Services
         public async Task RefreshFromExternalApiAsync(
             CancellationToken cancellationToken)
         {
-            var price = await _goldApi.GetLatestPriceAsync(cancellationToken);
+            var (success, price) = await _goldApi.GetLatestPriceAsync(cancellationToken);
+
+            if (!success)
+                return;
 
             var snapshot = new MarketPriceSnapshot(price);
 

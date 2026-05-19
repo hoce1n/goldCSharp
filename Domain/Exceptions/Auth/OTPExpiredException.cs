@@ -6,7 +6,7 @@ namespace Domain.Excetions.Auth
     public class OTPExpiredException : DomainException
     {
         public OTPExpiredException()
-            : base(ErrorCodes.OTP.Expired, "OTP expired.")
+            : base(ErrorCodes.OTP.Expired, "کد تایید منقضی شده است.")
         {
         }
     }

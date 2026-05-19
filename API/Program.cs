@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
              .WithOrigins(
                 "https://mohebigold.com",
                 "http://localhost:3000",
-                "http://192.168.41.1:3000"
+                "http://192.168.58.1:3000"
              )
              .AllowAnyHeader()
              .AllowAnyMethod()
@@ -42,6 +42,7 @@ builder.Services.AddCustomApiBehavior();
 builder.Services.AddHttpClient<IGoldPriceApiClient, GoldPriceApiClient>(client =>
 {
     client.BaseAddress = new Uri("https://api.brsapi.ir/Market/Gold_Currency.php?key=BWwtWvrnULuAgmZ6hr6Bh7RwPXbbmhTU");
+    client.Timeout = TimeSpan.FromSeconds(10);
 });
 
 

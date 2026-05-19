@@ -51,19 +51,25 @@ namespace API.Controllers
             return result;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("{quoteId:guid}/confirm")]
         public async Task<Result<ConfirmQuoteResponse>> ConfirmQuote(
             Guid quoteId,
+            [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
             CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(idempotencyKey))
+                return Result<ConfirmQuoteResponse>.Failure(
+                    Error.Failure(ErrorCodes.Quote.IdempotencyRequired, "شناسه Idempotency لازم است."));
+
             if (_currentUser.UserId is null)
                 return Result<ConfirmQuoteResponse>.Failure(
                     Error.Failure(ErrorCodes.Auth.Unauthorized, "اجازه درسترسی وجود ندارد."));
 
             var command = new ConfirmQuoteCommand(
                 quoteId,
-                _currentUser.UserId.Value);
+                _currentUser.UserId.Value,
+                idempotencyKey);
 
             var result = await _sender.Send(command, cancellationToken);
             return result;

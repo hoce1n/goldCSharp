@@ -18,7 +18,8 @@ namespace Domain.Entities.Order
         public decimal TotalPrice { get; private set; }
         public Guid QuoteId { get; private set; }
         public OrderStatus Status { get; private set; }
-        
+        public string IdempotencyKey { get; private set; } = null!;
+
         private Order() { }
 
         private Order(
@@ -29,7 +30,8 @@ namespace Domain.Entities.Order
             decimal requestAmount, 
             decimal unitPrice, 
             decimal totalPrice, 
-            Guid quoteId)
+            Guid quoteId,
+            string idempotencyKey)
         {
             UserId = userId;
             ProductId = productId;
@@ -39,6 +41,7 @@ namespace Domain.Entities.Order
             UnitPrice = unitPrice;
             TotalPrice = totalPrice;
             QuoteId = quoteId;
+            IdempotencyKey = idempotencyKey;
             Status = OrderStatus.Created;
             CreatedAt = DateTime.UtcNow;
         }
@@ -51,9 +54,9 @@ namespace Domain.Entities.Order
             decimal requestAmount,
             decimal unitPrice,
             decimal totalPrice,
-            Guid quoteId)
+            Guid quoteId,
+            string idempotencyKey)
         {
-            var id = Guid.NewGuid();
 
             return new Order(
                 userId,
@@ -63,13 +66,14 @@ namespace Domain.Entities.Order
                 requestAmount,
                 unitPrice,
                 totalPrice,
-                quoteId
+                quoteId,
+                idempotencyKey
             );
         }
 
         public void MarkCompleted()
         {
-            if (Status != OrderStatus.Completed)
+            if (Status != OrderStatus.Created)
                 throw new CanNotBeCompleted();
 
             Status = OrderStatus.Completed;

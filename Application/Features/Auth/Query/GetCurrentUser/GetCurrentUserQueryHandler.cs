@@ -6,14 +6,14 @@ using Domain.Common.Errors;
 
 namespace Application.Features.Auth.Query.GetCurrentUser
 {
-    public class GetCurrentUserHandler
+    public class GetCurrentUserQueryHandler
         : IQueryHandler<GetCurrentUserQuery, Result<GetCurrentUserResponse>>
     {
 
         private readonly ICurrentUser _currentUser;
         private readonly IUserRepository _userRepository;
 
-        public GetCurrentUserHandler(
+        public GetCurrentUserQueryHandler(
             ICurrentUser currentUser, 
             IUserRepository userRepository)
         {
@@ -27,13 +27,13 @@ namespace Application.Features.Auth.Query.GetCurrentUser
         {
             if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
                 return Result<GetCurrentUserResponse>.Failure(
-                    Error.Failure(ErrorCodes.User.Unauthorized, "U have to login."));
+                    Error.Failure(ErrorCodes.User.Unauthorized, "لطفا ابتدا وارد شوید."));
 
             var user = await _userRepository.GetByIdAsync(_currentUser.UserId.Value, cancellationToken);
 
             if (user is null)
                 return Result<GetCurrentUserResponse>.Failure(
-                    Error.Failure(ErrorCodes.User.NotFound, "User not found."));
+                    Error.Failure(ErrorCodes.User.NotFound, "کاربر یافت نشد."));
 
             var response = new GetCurrentUserResponse
             {
@@ -42,9 +42,9 @@ namespace Application.Features.Auth.Query.GetCurrentUser
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Role = user.Role,
-                NationalCode = user.NationalCode.Value,
-                Birthdate = user.BirthDate.ToString(),
-                Email = user.Email.Value,
+                NationalCode = user.NationalCode?.Value ?? string.Empty,
+                Birthdate = user.BirthDate.ToString() ?? string.Empty,
+                Email = user.Email?.Value ?? string.Empty,
                 VerificationLevel = user.VerificationLevel.ToString(),
                 IsProfileCompleted = user.IsProfileCompleted,
             };

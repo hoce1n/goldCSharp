@@ -48,32 +48,30 @@ namespace Domain.Entities.Quote
             };
         }
 
-        public void Confirm()
+        public void Confirm(DateTime now)
         {
-            if (IsExpired())
-                throw new QuoteExpiredExceptions();
-
             if (Status != QuoteStatus.Active)
                 throw new QuoteIsNotActiveException();
 
-            if (Status == QuoteStatus.Confirmed)
-                throw new QuoteAlreadyConfirmedException();
-
+            if (now > ExpiredAtUtc)
+                throw new QuoteExpiredExceptions();
 
             Status = QuoteStatus.Confirmed;
+            SetUpdated();
         }
 
-        public void Expire()
+        public void Expire(DateTime now)
         {
             if (Status != QuoteStatus.Active)
                 return;
 
             Status = QuoteStatus.Expired;
+            SetUpdated();
         }
 
-        public bool IsExpired()
+        public bool IsExpired(DateTime now)
         {
-            return DateTime.UtcNow > ExpiredAtUtc;
+            return now > ExpiredAtUtc;
         }
     }
 

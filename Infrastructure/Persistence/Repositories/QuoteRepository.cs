@@ -18,7 +18,7 @@ namespace Infrastructure.Persistence.Repositories
             await _context.Quotes.AddAsync(quote, cancellationToken);
         }
 
-        public async Task<Quote?> GetByIdAsync(Guid id)
+        public async Task<Quote?> GetByIdAsync(Guid? id, CancellationToken cancellationToken)
         {
             return await _context.Quotes
                         .FirstOrDefaultAsync(q => q.Id == id);

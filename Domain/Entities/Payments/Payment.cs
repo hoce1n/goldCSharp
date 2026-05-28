@@ -47,16 +47,17 @@ namespace Domain.Entities.Payments
             Authority = authority;
         }
 
-        public void MarkSucceeded(string refId)
+        public void MarkSucceeded(string refId, DateTime now)
         {
             if (Status != PaymentStatus.Pending)
                 throw new InvalidPaymentStateException();
 
             Status = PaymentStatus.Succeeded;
             RefId = refId;
+            SetUpdated();
         }
 
-        public void MarkFailed()
+        public void MarkFailed(DateTime now)
         {
             if (Status != PaymentStatus.Pending)
                 return;

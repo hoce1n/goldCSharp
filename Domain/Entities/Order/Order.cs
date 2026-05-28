@@ -2,7 +2,6 @@
 using Domain.Enums.Catalog;
 using Domain.Enums.Order;
 using Domain.Enums.Quote;
-using Domain.Exceptions;
 using Domain.Exceptions.Order;
 
 namespace Domain.Entities.Order

@@ -1,6 +1,6 @@
 using Domain.Entities.Identity;
 
-namespace Application.Abstractions.Services
+namespace Application.Abstractions.Authentication
 {
     public interface ITokenService
     {

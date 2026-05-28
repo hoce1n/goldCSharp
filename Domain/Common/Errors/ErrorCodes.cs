@@ -92,8 +92,11 @@
 
         public static class Payment
         {
+            public const string NotFound = "Payment.NOTFOUND";
             public const string InvalidPaymentAmount = "Payment.InvalidPaymentAmount";
             public const string InvalidPaymentState = "Payment.InvalidPaymentState";
+            public const string AlreadyVerified = "Payment.AlreadyVerified";
+            public const string VerificationFailed = "Payment.VerificationFailed";
         }
     }
 }

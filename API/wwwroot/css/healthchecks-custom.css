@@ -1,0 +1,23 @@
+﻿:root {
+    --primary-color: #4CAF50;
+    --danger-color: #f44336;
+    --warning-color: #ff9800;
+}
+
+.healthchecks-title {
+    font-family: 'Vazir', sans-serif;
+    font-size: 24px;
+    color: #2c3e50;
+}
+
+.healthchecks-status-healthy {
+    background-color: var(--primary-color);
+}
+
+.healthchecks-status-degraded {
+    background-color: var(--warning-color);
+}
+
+.healthchecks-status-unhealthy {
+    background-color: var(--danger-color);
+}

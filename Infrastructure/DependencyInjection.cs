@@ -11,18 +11,19 @@ using Domain.Services.Catalog;
 using Domain.Services.Identity;
 using Infrastructure.Caching;
 using Infrastructure.Configuration;
-using Infrastructure.Identity;
+using Infrastructure.HealthChecks;
+using Infrastructure.Payments.Mock;
 using Infrastructure.Payments.Zarinpal;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Security;
 using Infrastructure.Services;
-using Infrastructure.Time;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 
 namespace Infrastructure
@@ -38,7 +39,7 @@ namespace Infrastructure
             if (env.IsDevelopment())
             {
                 services.AddDbContext<AppDbContext>(options =>
-                   options.UseInMemoryDatabase("DebugDatabase"));
+                   options.UseInMemoryDatabase("GoldDb"));
                 //services.AddDbContext<AppDbContext>(option =>
                 //   option.UseSqlServer(Environment.GetEnvironmentVariable("Gold_Connection", EnvironmentVariableTarget.Machine)));
 
@@ -48,6 +49,27 @@ namespace Infrastructure
                 services.AddDbContext<AppDbContext>(option =>
                    option.UseSqlServer(Environment.GetEnvironmentVariable("Gold_Connection", EnvironmentVariableTarget.Machine)));
             }
+
+            services.AddHealthChecks()
+                .AddDbContextCheck<AppDbContext>(
+                    name: "database",
+                    failureStatus: HealthStatus.Unhealthy,
+                    tags: new[] { "ready", "live" })
+                .AddCheck<MemoryHealthCheck>(
+                    name: "memory",
+                    failureStatus: HealthStatus.Degraded,
+                    tags: new[] { "live" })
+                .AddCheck<DiskHealthCheck>(
+                    name: "disk",
+                    failureStatus: HealthStatus.Degraded,
+                    tags: new[] { "ready" });
+
+            services.AddHealthChecks()
+                .AddCheck<GoldApiHealthCheck>(
+                    name: "gold-api",
+                    failureStatus: HealthStatus.Degraded,
+                    tags: new[] { "liveness" });
+
 
             //Caching:
             services.AddMemoryCache();
@@ -80,7 +102,7 @@ namespace Infrastructure
             services.AddScoped<IWalletRepository, WalletRepository>();
             services.AddScoped<IWalletLedgerRepository, WalletLedgerRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
-            services.AddScoped<IPaymentGateway, ZarinpalGateway>();
+            services.AddScoped<IPaymentGateway, MockPaymentGateway>();
 
             services.AddScoped<RefreshTokenDomainService>();
 
@@ -103,7 +125,7 @@ namespace Infrastructure
             services.AddSingleton<IOtpSettings>(sp =>
                 new OtpSettings(configuration));
 
-            services.AddHttpClient<ZarinpalGateway>();
+            //services.AddHttpClient<ZarinpalGateway>();
 
             return services;
         }

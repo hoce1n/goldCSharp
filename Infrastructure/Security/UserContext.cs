@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
-namespace Infrastructure.Identity
+namespace Infrastructure.Security
 {
     public class UserContext : CurrentUser, IUserContext
     {

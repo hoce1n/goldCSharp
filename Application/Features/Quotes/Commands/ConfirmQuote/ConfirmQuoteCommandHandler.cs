@@ -19,6 +19,7 @@ namespace Application.Features.Quotes.Commands.ConfirmQuote
         private readonly IPaymentRepository _paymentRepository;
         private readonly IPaymentGateway _paymentGateway;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public ConfirmQuoteCommandHandler(
             IQuoteRepository quoteRepository, 
@@ -26,7 +27,8 @@ namespace Application.Features.Quotes.Commands.ConfirmQuote
             IWalletRepository walletRepository,
             IPaymentRepository paymentRepository,
             IPaymentGateway paymentGateway,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IDateTimeProvider dateTimeProvider)
         {
             _quoteRepository = quoteRepository;
             _orderRepository = orderRepository;
@@ -34,12 +36,15 @@ namespace Application.Features.Quotes.Commands.ConfirmQuote
             _paymentRepository = paymentRepository;
             _paymentGateway = paymentGateway;
             _unitOfWork = unitOfWork;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<Result<ConfirmQuoteResponse>> Handle(
             ConfirmQuoteCommand command,
             CancellationToken cancellationToken)
         {
+            var now = _dateTimeProvider.UtcNow;
+
             var existingOrder = await _orderRepository
                 .GetByIdempotencyKeyAsync(command.IdempotencyKey, cancellationToken);
 
@@ -53,7 +58,7 @@ namespace Application.Features.Quotes.Commands.ConfirmQuote
                 };
             }
 
-            var quote = await _quoteRepository.GetByIdAsync(command.QuoteId);
+            var quote = await _quoteRepository.GetByIdAsync(command.QuoteId, cancellationToken);
 
             if (quote is null)
                 return Result<ConfirmQuoteResponse>.Failure(
@@ -67,10 +72,10 @@ namespace Application.Features.Quotes.Commands.ConfirmQuote
                 return Result<ConfirmQuoteResponse>.Failure(
                     Error.Failure(ErrorCodes.Quote.IsNotActive, "مظنه فعال نیست."));
 
-            if (DateTime.UtcNow > quote.ExpiredAtUtc)
+            if (now > quote.ExpiredAtUtc)
             {
-                quote.Expire();
-                await _unitOfWork.SaveChangeAsync();
+                quote.Expire(now);
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
 
                 return Result<ConfirmQuoteResponse>.Failure(
                     Error.Failure(ErrorCodes.Quote.Expired, "مظنه منقضی شده."));
@@ -92,7 +97,7 @@ namespace Application.Features.Quotes.Commands.ConfirmQuote
                     quote.TotalPrice,
                     $"Payment for quote {quote.Id}");
 
-                quote.Confirm();
+                quote.Confirm(now);
 
                 var order = Order.Create(
                     quote.UserId,

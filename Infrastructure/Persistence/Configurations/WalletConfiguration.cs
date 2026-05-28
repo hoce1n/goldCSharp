@@ -34,7 +34,7 @@ namespace Infrastructure.Persistence.Configurations
             //builder.Property(x => x.RowVersion)
             //    .IsRowVersion()
             //    .IsConcurrencyToken();
-                
+
 
             builder.Ignore(x => x.Events);
         }

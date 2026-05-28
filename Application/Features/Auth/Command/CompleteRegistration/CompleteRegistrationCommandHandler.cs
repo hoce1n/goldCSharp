@@ -1,7 +1,6 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Messaging;
 using Application.Abstractions.Repositories;
-using Application.Abstractions.Services;
 using Application.Common.Interfaces;
 using Application.Common.Result;
 using Domain.Common.Errors;

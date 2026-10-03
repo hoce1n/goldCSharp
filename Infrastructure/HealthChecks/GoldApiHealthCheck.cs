@@ -1,13 +1,14 @@
-﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using Application.Abstractions.Services;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Infrastructure.HealthChecks
 {
     public class GoldApiHealthCheck : IHealthCheck
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        public GoldApiHealthCheck(IHttpClientFactory httpClientFactory)
+        private readonly IGoldPriceApiClient _goldPriceApiClient;
+        public GoldApiHealthCheck(IGoldPriceApiClient goldPriceApiClient)
         {
-            _httpClientFactory = httpClientFactory;
+            _goldPriceApiClient = goldPriceApiClient;
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(
@@ -16,16 +17,13 @@ namespace Infrastructure.HealthChecks
         {
             try
             {
-                var client = _httpClientFactory.CreateClient("GoldApi");
-                var response = await client.GetAsync("https://api.brsapi.ir/Market/Gold_Currency.php?key=BWwtWvrnULuAgmZ6hr6Bh7RwPXbbmhTU", cancellationToken);
-
-                if (response.IsSuccessStatusCode)
+                var (success, _) = await _goldPriceApiClient.GetLatestPriceAsync(cancellationToken);
+                if (success)
                 {
                     return HealthCheckResult.Healthy("Gold API is responding normally");
                 }
 
-                return HealthCheckResult.Unhealthy(
-                    $"Gold API returned status code: {response.StatusCode}");
+                return HealthCheckResult.Unhealthy("Gold API returned an unsuccessful response");
             } catch (Exception ex)
             {
                 return HealthCheckResult.Unhealthy("Gold API is not responnding", ex);

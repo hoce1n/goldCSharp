@@ -8,3 +8,7 @@ Domain/bin
 Domain/obj
 Infrastructure/bin
 Infrastructure/obj
+
+# Environment-specific application settings
+API/appsettings*.json
+!API/appsettings.Development.json

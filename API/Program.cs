@@ -48,9 +48,16 @@ builder.Services.AddHealthChecksUI(setup =>
 })
 .AddInMemoryStorage();
 
+var goldApiBaseUrl = builder.Configuration["BrsApi:BaseUrl"]
+    ?? "https://api.brsapi.ir/Market/Gold_Currency.php";
+var goldApiKey = builder.Configuration["BrsApi:Key"];
+var goldApiUrl = string.IsNullOrWhiteSpace(goldApiKey)
+    ? goldApiBaseUrl
+    : $"{goldApiBaseUrl}?key={Uri.EscapeDataString(goldApiKey)}";
+
 builder.Services.AddHttpClient<IGoldPriceApiClient, GoldPriceApiClient>(client =>
 {
-    client.BaseAddress = new Uri("https://api.brsapi.ir/Market/Gold_Currency.php?key=BWwtWvrnULuAgmZ6hr6Bh7RwPXbbmhTU");
+    client.BaseAddress = new Uri(goldApiUrl);
     client.Timeout = TimeSpan.FromSeconds(10);
 });
 
